@@ -143,16 +143,16 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	unregisteredNodes := a.ClusterStateRegistry.GetUnregisteredNodes()
 	if len(unregisteredNodes) > 0 {
 		glog.V(1).Infof("%d unregistered nodes present", len(unregisteredNodes))
-		removedAny, err := removeOldUnregisteredNodes(unregisteredNodes, autoscalingContext, time.Now())
+		removedAny, unregerr := removeOldUnregisteredNodes(unregisteredNodes, autoscalingContext, time.Now())
 		// There was a problem with removing unregistered nodes. Retry in the next loop.
-		if err != nil {
+		if unregerr != nil {
 			if removedAny {
-				glog.Warningf("Some unregistered nodes were removed, but got error: %v", err)
+				glog.Warningf("Some unregistered nodes were removed, but got error: %v", unregerr)
 			} else {
-				glog.Errorf("Failed to remove unregistered nodes: %v", err)
+				glog.Errorf("Failed to remove unregistered nodes: %v", unregerr)
 
 			}
-			return errors.ToAutoscalerError(errors.CloudProviderError, err)
+			return errors.ToAutoscalerError(errors.CloudProviderError, unregerr)
 		}
 		// Some nodes were removed. Let's skip this iteration, the next one should be better.
 		if removedAny {
@@ -192,6 +192,20 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	allNodesAvailableTime := GetAllNodesAvailableTime(readyNodes)
 	podsToReset, unschedulablePodsToHelp := SlicePodsByPodScheduledTime(allUnschedulablePods, allNodesAvailableTime)
 	ResetPodScheduledCondition(a.AutoscalingContext.ClientSet, podsToReset)
+
+	if autoscalingContext.MinExtraCapacityRate > 0.0 {
+		scheduledPlaceholderPods, unscheduledPlaceholderPods, err := CreateAndSchedulePlaceholderPods(readyNodes, allScheduled, autoscalingContext, a.PredicateChecker)
+
+		if err != nil {
+			glog.Errorf("Failed to schedule placeholder pods: %v", err)
+			return
+		}
+
+		// Unscheduled placeholder pods should be considered as actual unschedulable pods to advance scaling up for producing resource slack
+		unschedulablePodsToHelp = append(unschedulablePodsToHelp, unscheduledPlaceholderPods...)
+		// Scheduled placeholder pods should be considered as actual scheduled pods to delay scaling down for keeping resource slack
+		allScheduled = append(allScheduled, scheduledPlaceholderPods...)
+	}
 
 	// We need to check whether pods marked as unschedulable are actually unschedulable.
 	// This should prevent from adding unnecessary nodes. Example of such situation:

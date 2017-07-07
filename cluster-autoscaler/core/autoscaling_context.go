@@ -67,6 +67,8 @@ type AutoscalingOptions struct {
 	ScaleDownUnreadyTime time.Duration
 	// MaxNodesTotal sets the maximum number of nodes in the whole cluster
 	MaxNodesTotal int
+	// MinExtraCapacityRate is the rate of the amount of extra cpu/memory, compared to your cluster's total capacity, used to create resource slacks for faster pod startup
+	MinExtraCapacityRate float64
 	// NodeGroupAutoDiscovery represents one or more definition(s) of node group auto-discovery
 	NodeGroupAutoDiscovery string
 	// UnregisteredNodeRemovalTime represents how long CA waits before removing nodes that are not registered in Kubernetes")
