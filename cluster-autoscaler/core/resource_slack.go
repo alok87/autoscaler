@@ -56,10 +56,6 @@ func CreateAndSchedulePlaceholderPods(readyNodes []*apiv1.Node, allScheduled []*
 	minExtraCapacityRate := autoscalingContext.MinExtraCapacityRate
 	clusterExtraMilliCPU := int64(float64(clusterMilliCPU) * minExtraCapacityRate)
 	clusterExtraMemory := clusterMemory * minExtraCapacityRate
-	glog.V(1).Infof("Resource-slack# minNodeMilliCPU: %dm", minNodeMilliCPU)
-	glog.V(1).Infof("Resource-slack# minNodeMemory: %dKi", minNodeMemory)
-	glog.V(1).Infof("Resource-slack# clusterExtraMillCPU: %dm", clusterExtraMilliCPU)
-	glog.V(1).Infof("Resource-slack# clusterExtraMemory: %dKi", clusterExtraMemory)
 	// Mix different types of placeholder pods to ensure both:
 	// (1) providing extra capacity even for the largest pod in the cluster and
 	// (2) not wasting cluster capacity by making all the placeholder pods too big
@@ -105,8 +101,6 @@ func CreateAndSchedulePlaceholderPods(readyNodes []*apiv1.Node, allScheduled []*
 		}
 	}
 
-	glog.V(1).Infof("Resource-slack# maxPodRequestedMilliCPU: %dm", maxPodRequestedMilliCPU)
-	glog.V(1).Infof("Resource-slack# maxPodRequestedMemory: %dKi", maxPodRequestedMemory)
 	// Resource required for all the remaining placeholder pods
 	remainingClusterExtraMilliCPU := clusterExtraMilliCPU - maxPodRequestedMilliCPU
 	remainingClusterExtraMemory := clusterExtraMemory - float64(maxPodRequestedMemory)

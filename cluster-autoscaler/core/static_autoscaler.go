@@ -82,6 +82,7 @@ func (a *StaticAutoscaler) CloudProvider() cloudprovider.CloudProvider {
 
 // RunOnce iterates over node groups and scales them up/down if necessary
 func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError {
+        glog.V(0).Infof("Control loop begins------------\n")
 	readyNodeLister := a.ReadyNodeLister()
 	allNodeLister := a.AllNodeLister()
 	unschedulablePodLister := a.UnschedulablePodLister()
@@ -194,11 +195,12 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	ResetPodScheduledCondition(a.AutoscalingContext.ClientSet, podsToReset)
 
 	if autoscalingContext.MinExtraCapacityRate > 0.0 {
+		glog.V(0).Infof("Extra capacity is %f", autoscalingContext.MinExtraCapacityRate)
 		scheduledPlaceholderPods, unscheduledPlaceholderPods, err := CreateAndSchedulePlaceholderPods(readyNodes, allScheduled, autoscalingContext, a.PredicateChecker)
 
 		if err != nil {
 			glog.Errorf("Failed to schedule placeholder pods: %v", err)
-			return
+			return errors.ToAutoscalerError(errors.ApiCallError, err)
 		}
 
 		// Unscheduled placeholder pods should be considered as actual unschedulable pods to advance scaling up for producing resource slack
