@@ -18,8 +18,8 @@ package drain
 
 import (
 	"fmt"
-	"time"
 	"strings"
+	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -137,7 +137,6 @@ func GetPodsForDeletionOnNodeDrain(
 				replicated = true
 			}
 		} else if refKind == "ReplicaSet" {
-			if
 			if checkReferences {
 				rs, err := client.Extensions().ReplicaSets(sr.Reference.Namespace).Get(sr.Reference.Name, metav1.GetOptions{})
 
@@ -173,7 +172,7 @@ func GetPodsForDeletionOnNodeDrain(
 			}
 		}
 		// Hack for now
-		if strings.Contains(pod.name, "placeholder") {
+		if strings.Contains(pod.Name, "placeholder") {
 			replicated = true
 		}
 
