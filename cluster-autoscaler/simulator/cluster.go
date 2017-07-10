@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
-	"strings"
 	"time"
 
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -88,7 +87,7 @@ candidateloop:
 			}
 			if err != nil {
 				// Hack for now
-				if strings.Contains(pod.Name, "placeholder") {
+				if err.String().Contains(pod.Name, "placeholder") {
 					glog.V(2).Infof("Note %s creator not found")
 				} else {
 					glog.V(2).Infof("%s: node %s cannot be removed: %v", evaluationType, node.Name, err)
