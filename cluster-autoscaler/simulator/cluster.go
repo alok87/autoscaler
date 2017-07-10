@@ -22,6 +22,7 @@ import (
 	"math"
 	"math/rand"
 	"time"
+	"strings"
 
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
@@ -87,7 +88,8 @@ candidateloop:
 			}
 			if err != nil {
 				// Hack for now
-				if err.Error().Contains(pod.Name, "placeholder") {
+				glog.V(2).Infof("Printing error as string: ", err.Error())
+				if strings.Contains(err.Error(), "placeholder") {
 					glog.V(2).Infof("Note %s creator not found")
 				} else {
 					glog.V(2).Infof("%s: node %s cannot be removed: %v", evaluationType, node.Name, err)
