@@ -60,7 +60,7 @@ type AutoscalingOptions struct {
 	// ScaleDownUtilizationThreshold sets threshould for nodes to be considered for scale down.
 	// Well-utilized nodes are not touched.
 	ScaleDownUtilizationThreshold float64
-	// ScaleDownUnneededTime sets the duriation CA exepects a node to be unneded/eligible for removal
+	// ScaleDownUnneededTime sets the duration CA exepects a node to be unneded/eligible for removal
 	// before scaling down the node.
 	ScaleDownUnneededTime time.Duration
 	// ScaleDownUnreadyTime represents how long an unready node should be unneeded before it is eligible for scale down

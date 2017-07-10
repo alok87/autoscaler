@@ -203,18 +203,24 @@ func (sd *ScaleDown) TryToScaleDown(nodes []*apiv1.Node, pods []*apiv1.Pod, pdbs
 	for _, node := range nodes {
 		if val, found := sd.unneededNodes[node.Name]; found {
 
+			glog.V(2).Infof("Node %s, val=%s", node.Name, val.String())
 			glog.V(2).Infof("%s was unneeded for %s", node.Name, now.Sub(val).String())
 
 			ready, _, _ := kube_util.GetReadinessState(node)
 			readinessMap[node.Name] = ready
 
 			// Check how long the node was underutilized.
-			if ready && !val.Add(sd.context.ScaleDownUnneededTime).Before(now) {
+			valCheck := val.Add(sd.context.ScaleDownUnneededTime).Before(now)
+			glog.V(2).Infof("Node %s, val+scaledown_unneeded_time=%s", node.Name, val.Add(sd.context.ScaleDownUnneededTime).String())
+			if ready && !valCheck {
+				glog.V(2).Infof("1) %s scale down discarded, ready=%t, valCheck=%t", node.Name, ready, valCheck)
 				continue
 			}
 
 			// Unready nodes may be deleted after a different time than unrerutilized.
-			if !ready && !val.Add(sd.context.ScaleDownUnreadyTime).Before(now) {
+			valCheck = val.Add(sd.context.ScaleDownUnreadyTime).Before(now)
+			if !ready && !valCheck {
+				glog.V(2).Infof("2) %s scale down discarded, ready=%t, valCheck=%t", node.Name, ready, valCheck)
 				continue
 			}
 
@@ -240,6 +246,7 @@ func (sd *ScaleDown) TryToScaleDown(nodes []*apiv1.Node, pods []*apiv1.Pod, pdbs
 			}
 
 			candidates = append(candidates, node)
+			glog.V(1).Infof("Candidates=", candidates)
 		}
 	}
 	if len(candidates) == 0 {
