@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"strings"
 	"time"
 
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -86,8 +87,13 @@ candidateloop:
 					podDisruptionBudgets)
 			}
 			if err != nil {
-				glog.V(2).Infof("%s: node %s cannot be removed: %v", evaluationType, node.Name, err)
-				continue candidateloop
+				// Hack for now
+				if strings.Contains(pod.Name, "placeholder") {
+					glog.V(2).Infof("Note %s creator not found")
+				} else {
+					glog.V(2).Infof("%s: node %s cannot be removed: %v", evaluationType, node.Name, err)
+					continue candidateloop
+				}
 			}
 		} else {
 			glog.V(2).Infof("%s: nodeInfo for %s not found", evaluationType, node.Name)
