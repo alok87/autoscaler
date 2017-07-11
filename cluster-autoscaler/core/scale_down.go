@@ -393,6 +393,10 @@ func deleteNode(context *AutoscalingContext, node *apiv1.Node, pods []*apiv1.Pod
 }
 
 func evictPod(podToEvict *apiv1.Pod, client kube_client.Interface, recorder kube_record.EventRecorder,
+	// Hack for now
+	if strings.Contains(podToEvict.Name, "placeholder") {
+		return
+	}
 	maxGracefulTerminationSec int, retryUntil time.Time, waitBetweenRetries time.Duration) error {
 	recorder.Eventf(podToEvict, apiv1.EventTypeNormal, "ScaleDown", "deleting pod for node scale down")
 	maxGraceful64 := int64(maxGracefulTerminationSec)
